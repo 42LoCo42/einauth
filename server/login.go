@@ -1,8 +1,6 @@
 package server
 
 import (
-	"encoding/json"
-	"log"
 	"net/http"
 	"reflect"
 
@@ -12,11 +10,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type LoginReq struct {
-	Username string
-	Password string
-}
-
 type CookieUser struct {
 	ID      uint
 	Name    string
@@ -25,46 +18,29 @@ type CookieUser struct {
 }
 
 func Login(c echo.Context) error {
-	credsErr := func() error {
+	reject := func() error {
 		return echo.NewHTTPError(
 			http.StatusForbidden,
 			"invalid credentials",
 		)
 	}
 
-	internalErr := func(err error, msg string) error {
-		return echo.NewHTTPError(
-			http.StatusInternalServerError,
-			errors.Wrap(err, msg),
-		)
-	}
-
-	var req LoginReq
-	if err := json.
-		NewDecoder(c.Request().Body).
-		Decode(&req); err != nil {
-		log.Print("1", err)
-		return credsErr()
-	}
-
-	if req.Username == "" || req.Password == "" {
-		log.Print("2")
-		return credsErr()
-	}
+	username := c.FormValue("username")
+	password := c.FormValue("password")
 
 	var user db.User
 	if err := db.DB.
 		Preload(reflect.TypeOf(db.Group{}).Name()+"s").
-		First(&user, &db.User{Name: req.Username}).
+		First(&user, &db.User{Name: username}).
 		Error; err != nil {
-		return credsErr()
+		return reject()
 	}
 
-	if ok, err := utils.VerifyPassword(req.Password, user.Password); err != nil || !ok {
-		return credsErr()
+	if ok, err := utils.VerifyPassword(password, user.Password); err != nil || !ok {
+		return reject()
 	}
 
-	cookie, err := utils.MakeCookie(CookieUser{
+	cookie, err := utils.SignCookie(CookieUser{
 		ID:      user.ID,
 		Name:    user.Name,
 		IsAdmin: user.IsAdmin,
@@ -73,9 +49,20 @@ func Login(c echo.Context) error {
 		}),
 	})
 	if err != nil {
-		return internalErr(err, "could not create cookie")
+		return echo.NewHTTPError(
+			http.StatusInternalServerError,
+			errors.Wrap(err, "could not create cookie"),
+		)
 	}
 
 	c.SetCookie(cookie)
-	return c.String(http.StatusOK, cookie.Value)
+
+	redir, err := c.Cookie("einauth-redir")
+	if err != nil {
+		// TODO better error indication
+		return c.Redirect(http.StatusSeeOther, "/")
+	}
+
+	c.SetCookie(utils.ClearCookie("redir"))
+	return c.Redirect(http.StatusSeeOther, redir.Value)
 }

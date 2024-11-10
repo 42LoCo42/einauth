@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -25,13 +24,8 @@ func Auth(c echo.Context) error {
 	}
 
 	reject := func() error {
-		return c.Redirect(
-			http.StatusSeeOther,
-			fmt.Sprintf("%s?target=%s",
-				config.CONFIG.URL,
-				url.QueryEscape(target.String()),
-			),
-		)
+		c.SetCookie(utils.MakeCookie("redir", target.String()))
+		return c.Redirect(http.StatusSeeOther, config.CONFIG.URL)
 	}
 
 	match := func(pat, val string) bool {
@@ -51,6 +45,8 @@ func Auth(c echo.Context) error {
 		})
 	})
 
+	log.Print(rules)
+
 	// rules with no policy just accept w/o loading the cookie
 	if utils.Any(rules, func(rule config.Rule) bool {
 		return rule.Policy == nil
@@ -58,7 +54,7 @@ func Auth(c echo.Context) error {
 		return accept()
 	}
 
-	cookie, err := c.Cookie("einauth")
+	cookie, err := c.Cookie("einauth-token")
 	if err != nil {
 		return reject()
 	}
@@ -87,9 +83,10 @@ func Auth(c echo.Context) error {
 	})
 
 	if len(rules) == 0 {
-		return AccessDeniedUI(c)
+		return reject()
 	}
 
 	// TODO validate two factor auth
+	log.Print(rules)
 	return accept()
 }

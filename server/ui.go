@@ -1,15 +1,25 @@
 package server
 
 import (
-	"log"
-	"net/http"
-
 	"github.com/42LoCo42/einauth/utils"
 	"github.com/labstack/echo/v4"
+
+	. "maragu.dev/gomponents"
+	. "maragu.dev/gomponents/components"
+	. "maragu.dev/gomponents/html"
 )
 
+func Page(c echo.Context, title string, nodes ...Node) error {
+	return HTML5(HTML5Props{
+		Title:    title,
+		Language: "en",
+		Head:     []Node{},
+		Body:     nodes,
+	}).Render(c.Response())
+}
+
 func UI(c echo.Context) error {
-	cookie, err := c.Cookie("einauth")
+	cookie, err := c.Cookie("einauth-token")
 	if err != nil {
 		return LoginUI(c)
 	}
@@ -19,15 +29,32 @@ func UI(c echo.Context) error {
 		return LoginUI(c)
 	}
 
-	log.Print(user)
+	return Page(c, "einauth",
+		H1(Text("Welcome to einauth")),
+		H3(Textf("You're logged in as %s", user.Name)),
 
-	return c.String(http.StatusOK, "TODO main UI")
+		Form(Method("POST"), Action("/logout"),
+			Input(Type("submit"), Value("Logout")),
+		),
+	)
 }
 
 func LoginUI(c echo.Context) error {
-	return c.String(http.StatusForbidden, "TODO login UI")
-}
+	return Page(c, "einauth - login",
+		H1(Text("Log in to einauth")),
 
-func AccessDeniedUI(c echo.Context) error {
-	return c.String(http.StatusForbidden, "TODO access denied UI")
+		Form(Method("POST"), Action("/login"),
+			Table(
+				Tr(
+					Td(Text("Username: ")),
+					Td(Input(Type("text"), Name("username"))),
+				),
+				Tr(
+					Td(Text("Password: ")),
+					Td(Input(Type("password"), Name("password"))),
+				),
+			),
+			Input(Type("submit"), Value("Login")),
+		),
+	)
 }

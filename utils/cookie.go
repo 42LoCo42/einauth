@@ -2,9 +2,12 @@ package utils
 
 import (
 	"crypto/rand"
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
+	"github.com/42LoCo42/einauth/config"
 	"github.com/go-faster/errors"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -23,7 +26,25 @@ type CookieData[X any] struct {
 	Data X
 }
 
-func MakeCookie[X any](data X) (*http.Cookie, error) {
+func MakeCookie(name, value string) *http.Cookie {
+	return &http.Cookie{
+		Name:     fmt.Sprintf("einauth-%s", name),
+		Value:    value,
+		Domain:   config.CONFIG.Domain,
+		Path:     "/",
+		Secure:   strings.HasPrefix(config.CONFIG.URL, "https"),
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+	}
+}
+
+func ClearCookie(name string) *http.Cookie {
+	cookie := MakeCookie(name, "0")
+	cookie.Expires = time.Unix(0, 0)
+	return cookie
+}
+
+func SignCookie[X any](data X) (*http.Cookie, error) {
 	now := time.Now()
 	end := now.Add(time.Hour * 24)
 
@@ -44,14 +65,9 @@ func MakeCookie[X any](data X) (*http.Cookie, error) {
 		return nil, errors.Wrap(err, "could not sign cookie")
 	}
 
-	return &http.Cookie{
-		Name:     "einauth",
-		Value:    signed,
-		Expires:  end,
-		Secure:   true,
-		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
-	}, nil
+	cookie := MakeCookie("token", signed)
+	cookie.Expires = end
+	return cookie, nil
 }
 
 func VerifyCookie[X any](cookie *http.Cookie) (*X, error) {

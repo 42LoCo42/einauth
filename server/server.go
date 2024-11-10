@@ -10,6 +10,7 @@ func Init() (*echo.Echo, error) {
 	e.GET("/", UI)
 	e.GET("/auth", Auth)
 	e.POST("/login", Login)
+	e.POST("/logout", Logout)
 
 	return e, nil
 }

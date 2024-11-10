@@ -10,6 +10,7 @@ require (
 	github.com/matthewhartstonge/argon2 v1.0.1
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/gorm v1.25.12
+	maragu.dev/gomponents v1.0.0
 )
 
 require (

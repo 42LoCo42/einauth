@@ -8,7 +8,9 @@ import (
 )
 
 type Config struct {
-	URL   string
+	URL    string
+	Domain string
+
 	Rules []Rule
 }
 

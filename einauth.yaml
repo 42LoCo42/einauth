@@ -1,11 +1,14 @@
-url: "http://auth.localhost:8080"
+url: "http://auth.local.host:8080"
+domain: "local.host"
 
 rules:
-  - domain: "localhost:8080"
+  - domain: "main.local.host:8080"
     paths:
       - "/utils/.*"
 
-  - domain: "localhost:8080"
+  - domain: "main.local.host:8080"
+    paths:
+      - "/config/.*"
     policy:
       subjects:
         - "group:foousers"
