@@ -12,20 +12,6 @@ import (
 	// "maragu.dev/gomponents"
 )
 
-type User struct {
-	ID       uint
-	Name     string
-	Email    string
-	Password string
-	IsAdmin  bool
-	Groups   []Group `gorm:"many2many:memberships"`
-}
-
-type Group struct {
-	ID   uint
-	Name string
-}
-
 func main() {
 	if err := start(); err != nil {
 		log.Fatal(err)
@@ -43,6 +29,25 @@ func start() error {
 
 	if err := db.AutoMigrate(&User{}); err != nil {
 		return errors.Wrap(err, "DB migration failed")
+	}
+
+	// create initial admin user if not present
+	{
+		var admin User
+		if err := db.First(&admin, &User{IsAdmin: true}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+			// admin:admin
+			admin = User{
+				Name:     "admin",
+				Password: "$argon2id$v=19$m=65536,t=3,p=4$0YzwtVN53P2Dm8hw4pSjmA$KQazfll8MamwA+D1gDI9pEZ2TLM/6tjn4RGMib/rw3M",
+				IsAdmin:  true,
+			}
+
+			if err := db.Create(&admin).Error; err != nil {
+				return errors.Wrap(err, "could not create initial admin user")
+			}
+
+			log.Print("Initial admin user created with creds `admin:admin`")
+		}
 	}
 
 	return nil

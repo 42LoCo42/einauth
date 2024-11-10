@@ -6,7 +6,7 @@
           pname = "einauth";
           version = "1";
           src = ./.;
-          vendorHash = "sha256-+LbuIRISEiwFlf4ewzRGz6T18oSdGYEsG/9G5NiT/b8=";
+          vendorHash = "sha256-4kIaKf1Noq5SwBVk8BGxaJcOSHtmPcmF+G7VG1hzOgw=";
 
           CGO_ENABLED = "0";
           ldflags = [ "-s" "-w" ];
