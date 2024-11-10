@@ -13,10 +13,14 @@ type Config struct {
 }
 
 type Rule struct {
-	Domain   string
-	Paths    []string
-	Subjects []string
-	Policy   string
+	Domain string
+	Paths  []string
+	Policy *Policy
+}
+
+type Policy struct {
+	Subjects  []string
+	TwoFactor bool
 }
 
 var CONFIG Config

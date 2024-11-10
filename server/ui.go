@@ -21,9 +21,13 @@ func UI(c echo.Context) error {
 
 	log.Print(user)
 
-	return c.String(http.StatusOK, "TODO main page")
+	return c.String(http.StatusOK, "TODO main UI")
 }
 
 func LoginUI(c echo.Context) error {
-	return c.String(http.StatusForbidden, "TODO login page")
+	return c.String(http.StatusForbidden, "TODO login UI")
+}
+
+func AccessDeniedUI(c echo.Context) error {
+	return c.String(http.StatusForbidden, "TODO access denied UI")
 }

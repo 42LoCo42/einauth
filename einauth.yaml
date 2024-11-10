@@ -1,8 +1,11 @@
 url: "http://auth.localhost:8080"
 
 rules:
-  - domain: "foo.localhost"
-    subjects:
-      - "user:alice"
-      - "group:foousers"
-    policy: "two_factor"
+  - domain: "localhost:8080"
+    paths:
+      - "/utils/.*"
+
+  - domain: "localhost:8080"
+    policy:
+      subjects:
+        - "group:foousers"
