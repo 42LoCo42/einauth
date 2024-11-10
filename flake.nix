@@ -15,6 +15,8 @@
         devShells.default = pkgs.mkShell {
           inputsFrom = [ packages.default ];
           packages = with pkgs; [
+            air
+            caddy
             sqlite-interactive
           ];
         };

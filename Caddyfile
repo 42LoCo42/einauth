@@ -1,0 +1,11 @@
+{
+	http_port 8080
+}
+
+http://foo.localhost {
+	forward_auth localhost:9001 {
+		uri /auth
+	}
+
+	file_server browse
+}

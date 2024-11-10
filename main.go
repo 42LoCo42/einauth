@@ -4,12 +4,19 @@ import (
 	"flag"
 	"log"
 
-	"github.com/glebarez/sqlite"
+	"github.com/42LoCo42/einauth/config"
+	"github.com/42LoCo42/einauth/db"
+	"github.com/42LoCo42/einauth/server"
 	"github.com/go-faster/errors"
-
-	// "github.com/labstack/echo/v4"
 	"gorm.io/gorm"
-	// "maragu.dev/gomponents"
+
+	"github.com/labstack/echo/v4"
+)
+
+var (
+	CONFIG config.Config
+	DB     *gorm.DB
+	SERVER *echo.Echo
 )
 
 func main() {
@@ -18,36 +25,26 @@ func main() {
 	}
 }
 
-func start() error {
+func start() (err error) {
+	address := flag.String("address", ":9001", "Address to listen on")
+	configPath := flag.String("config", "einauth.yaml", "Path to config file")
 	dbPath := flag.String("db", "einauth.db", "Path to database file")
 	flag.Parse()
 
-	db, err := gorm.Open(sqlite.Open(*dbPath))
+	CONFIG, err = config.Init(*configPath)
 	if err != nil {
-		return errors.Wrap(err, "could not open DB")
+		return err
 	}
 
-	if err := db.AutoMigrate(&User{}); err != nil {
-		return errors.Wrap(err, "DB migration failed")
+	DB, err = db.Init(*dbPath)
+	if err != nil {
+		return err
 	}
 
-	// create initial admin user if not present
-	{
-		var admin User
-		if err := db.First(&admin, &User{IsAdmin: true}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-			// admin:admin
-			admin = User{
-				Name:     "admin",
-				Password: "$argon2id$v=19$m=65536,t=3,p=4$0YzwtVN53P2Dm8hw4pSjmA$KQazfll8MamwA+D1gDI9pEZ2TLM/6tjn4RGMib/rw3M",
-				IsAdmin:  true,
-			}
+	SERVER, err = server.Init()
 
-			if err := db.Create(&admin).Error; err != nil {
-				return errors.Wrap(err, "could not create initial admin user")
-			}
-
-			log.Print("Initial admin user created with creds `admin:admin`")
-		}
+	if err := SERVER.Start(*address); err != nil {
+		return errors.Wrap(err, "failed to start server")
 	}
 
 	return nil

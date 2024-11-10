@@ -1,0 +1,6 @@
+rules:
+  - domain: "foo.localhost"
+    subjects:
+      - "user:alice"
+      - "group:foousers"
+    policy: "two_factor"
