@@ -5,11 +5,11 @@ go 1.20
 require (
 	github.com/glebarez/sqlite v1.11.0
 	github.com/go-faster/errors v0.7.1
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/matthewhartstonge/argon2 v1.0.1
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/gorm v1.25.12
-	maragu.dev/gomponents v1.0.0
 )
 
 require (

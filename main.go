@@ -8,14 +8,12 @@ import (
 	"github.com/42LoCo42/einauth/db"
 	"github.com/42LoCo42/einauth/server"
 	"github.com/go-faster/errors"
-	"gorm.io/gorm"
 
 	"github.com/labstack/echo/v4"
 )
 
 var (
 	CONFIG config.Config
-	DB     *gorm.DB
 	SERVER *echo.Echo
 )
 
@@ -36,12 +34,14 @@ func start() (err error) {
 		return err
 	}
 
-	DB, err = db.Init(*dbPath)
-	if err != nil {
+	if err := db.Init(*dbPath); err != nil {
 		return err
 	}
 
 	SERVER, err = server.Init()
+	if err != nil {
+		return err
+	}
 
 	if err := SERVER.Start(*address); err != nil {
 		return errors.Wrap(err, "failed to start server")
