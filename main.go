@@ -8,13 +8,6 @@ import (
 	"github.com/42LoCo42/einauth/db"
 	"github.com/42LoCo42/einauth/server"
 	"github.com/go-faster/errors"
-
-	"github.com/labstack/echo/v4"
-)
-
-var (
-	CONFIG config.Config
-	SERVER *echo.Echo
 )
 
 func main() {
@@ -29,8 +22,7 @@ func start() (err error) {
 	dbPath := flag.String("db", "einauth.db", "Path to database file")
 	flag.Parse()
 
-	CONFIG, err = config.Init(*configPath)
-	if err != nil {
+	if err = config.Init(*configPath); err != nil {
 		return err
 	}
 
@@ -38,12 +30,12 @@ func start() (err error) {
 		return err
 	}
 
-	SERVER, err = server.Init()
+	server, err := server.Init()
 	if err != nil {
 		return err
 	}
 
-	if err := SERVER.Start(*address); err != nil {
+	if err := server.Start(*address); err != nil {
 		return errors.Wrap(err, "failed to start server")
 	}
 

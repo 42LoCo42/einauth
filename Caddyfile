@@ -2,7 +2,11 @@
 	http_port 8080
 }
 
-http://foo.localhost {
+http://auth.localhost {
+	reverse_proxy localhost:9001
+}
+
+http://localhost {
 	forward_auth localhost:9001 {
 		uri /auth
 	}

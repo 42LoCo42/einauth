@@ -8,8 +8,8 @@ import (
 )
 
 type Config struct {
-	Domain string
-	Rules  []Rule
+	URL   string
+	Rules []Rule
 }
 
 type Rule struct {
@@ -19,16 +19,18 @@ type Rule struct {
 	Policy   string
 }
 
-func Init(path string) (config Config, err error) {
+var CONFIG Config
+
+func Init(path string) error {
 	file, err := os.Open(path)
 	if err != nil {
-		return config, errors.Wrap(err, "could not open config file")
+		return errors.Wrap(err, "could not open config file")
 	}
 	defer file.Close()
 
-	if err := yaml.NewDecoder(file).Decode(&config); err != nil {
-		return config, errors.Wrap(err, "could not load config")
+	if err := yaml.NewDecoder(file).Decode(&CONFIG); err != nil {
+		return errors.Wrap(err, "could not load config")
 	}
 
-	return config, nil
+	return nil
 }

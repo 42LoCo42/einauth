@@ -8,8 +8,8 @@ func Init() (*echo.Echo, error) {
 	e := echo.New()
 
 	e.GET("/", UI)
+	e.GET("/auth", Auth)
 	e.POST("/login", Login)
-	// TODO auth endpoint
 
 	return e, nil
 }
