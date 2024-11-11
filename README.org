@@ -1,0 +1,7 @@
+* einauth
+
+Authelia + LLDAP, except not.
+
+Heavily WIP. Caveat emptor.
+
+:3
